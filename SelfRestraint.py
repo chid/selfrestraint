@@ -55,7 +55,7 @@ class MainForm(QDialog):
         self.editButton.clicked.connect(self.openList)
 
     def openList(self):
-        """docstring for openList"""
+        """Show the blocklist editor"""
         list.show()
 
     def change(self):
@@ -115,7 +115,7 @@ class ListEditor(QDialog):
         file.write(list.tableView.toPlainText())
 
     def closeList(self):
-        """Hide the list"""
+        """Hide the list & save any changes"""
         self.updateBlocks()
         list.hide()
 
