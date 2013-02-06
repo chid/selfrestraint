@@ -7,7 +7,10 @@
 # Lambert's SelfControl app.
 #
 
-import sys, os, time, webbrowser, urllib
+import sys
+import os
+import time
+
 # Importing only specific modules from Qt will save us about 150MB of space
 from PyQt4.QtCore import Qt, QTimer, SIGNAL
 from PyQt4.QtGui import QPushButton, QDialog, QApplication, QSlider, QLabel, QHBoxLayout, \
@@ -22,10 +25,10 @@ class MainForm(QDialog):
         super(MainForm, self).__init__(parent)
         self.setWindowTitle("SelfRestraint")
         # Create widgets such as buttons and slider
-        self.editButton  = QPushButton("Edit Blocklist")
+        self.editButton = QPushButton("Edit Blocklist")
         self.startButton = QPushButton("Start")
-        self.timeSlider  = QSlider(Qt.Horizontal)
-        self.timeLabel   = QLabel('Disabled')
+        self.timeSlider = QSlider(Qt.Horizontal)
+        self.timeLabel = QLabel('Disabled')
         # Disable start button
         self.startButton.setEnabled(False)
         # Mess with the slider
@@ -82,7 +85,7 @@ class ListEditor(QDialog):
         # Create widgets
         self.tableView = QPlainTextEdit()
 
-        if not os.path.isfile(homedir + "\\blocklist"):
+        if not os.path.isfile(os.path.join(config_dir, 'blocklist')):
             self.createBlockFile()
         self.loadBlockFile()
 
@@ -96,19 +99,19 @@ class ListEditor(QDialog):
 
     def loadBlockFile(self):
         """If a site block file exists, load it"""
-        file = open(homedir + "blocklist")
+        file = open(config_dir + "blocklist")
         self.tableView.appendPlainText(file.read())
         file.close()
 
     def createBlockFile(self):
         """Create a new site block file"""
-        file = open(homedir + "blocklist", 'w')
+        file = open(config_dir + "blocklist", 'w')
         file.write("# Add one website per line #\nexample.com\n")
         file.close()
 
     def updateBlocks(self):
         """Write blocked sites to file"""
-        file = open(homedir + "blocklist", 'w+')
+        file = open(config_dir + "blocklist", 'w+')
         file.write(list.tableView.toPlainText())
 
     def closeList(self):
@@ -122,7 +125,7 @@ class Backend():
     and appending them to the system hosts file"""
     def __init__(self, parent=None):
         if sys.platform.startswith('linux'):
-            initHosts()
+            self.initHosts()
 
         elif sys.platform.startswith('darwin'):
             self.HostsFile = "/etc/hosts"
@@ -228,76 +231,6 @@ class Backend():
         counter.hide()
 
 
-class checkDonation():
-    def __init__(self, parent=None):
-        if not os.path.isfile(homedir + "donateinfo"):
-            self.createDonateFile()
-        self.loadDonateFile()
-
-    def loadDonateFile(self):
-        """If a site block file exists, load it"""
-        file = open(homedir + "donateinfo", 'r')
-        donated = file.read()
-        file.close()
-        file = open(homedir + "donateinfo", 'r+')
-
-        if not donated:
-            self.createDonateFile()
-        donated = int(donated)
-        if donated > 1:
-            donated = str(donated - 1)
-            file.write(donated)
-            file.close()
-        elif donated == 1:
-            file.write("5")
-            file.close()
-            self.generateAlert()
-
-    def createDonateFile(self):
-        """Create a new site block file"""
-        file = open(homedir + "donateinfo", 'w')
-        file.write("5")
-        file.close()
-        self.generateAlert()
-
-    def generateAlert(self):
-        self.alertBox = QMessageBox()
-        self.alertBox.setText("If SelfRestraint has been helpful, please consider donating to the project so development can continue! =)")
-        self.alertBox.donateButton = self.alertBox.addButton("Donate", 3)
-        self.alertBox.donateButton.clicked.connect(self.openURL)
-        self.alertBox.addButton("Not Now", 1)
-        self.alertBox.show()
-
-    def openURL(self):
-        webbrowser.open_new("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=4K58VXHUQDM9A")
-        file = open(homedir + "donateinfo", 'r+')
-        file.write("0")
-        file.close()
-
-
-class checkForUpdates():
-    def __init__(self, parent=None):
-        self.VERSION = "0.2"  # The version of this app
-        f = urllib.urlopen("https://raw.github.com/ParkerK/selfrestraint/master/version")
-        if sys.platform.startswith('win'):
-            self.new_version = f.read().split("\n")[0].split(":")[1]
-            self.VERSION = "0.3"
-        else:
-            self.new_version = f.read().split("\n")[1].split(":")[1]
-
-    def check(self):
-        if self.new_version != self.VERSION:
-            self.alertBox = QMessageBox()
-            self.alertBox.setText("A new version of SelfRestraint is now available. It's recommended that you download this update")
-            self.alertBox.downloadButton = self.alertBox.addButton("Get The Update", 3)
-            self.alertBox.downloadButton.clicked.connect(self.openURL)
-            self.alertBox.addButton("Remind Me Later", 1)
-            self.alertBox.show()
-
-    def openURL(self):
-        webbrowser.open_new("http://parker.kuivi.la/projects/selfrestraint.html")
-
-
 if __name__ == '__main__':
     # In OS X we need to run this as root in order to block sites
     if sys.platform.startswith('darwin'):
@@ -310,10 +243,10 @@ if __name__ == '__main__':
             # sys.exit(1)
     elif sys.platform.startswith('linux'):
         from xdg.BaseDirectory import *
-        homedir = os.path.join(xdg_config_home, "SelfRestraint/")
-        # print homedir
-        if not os.path.isdir(homedir):
-            os.mkdir(homedir)
+        config_dir = os.path.join(xdg_config_home, 'SelfRestraint/')
+        # print config_dir
+        if not os.path.isdir(config_dir):
+            os.mkdir(config_dir)
 
     # Create the Qt Application
 
@@ -323,21 +256,18 @@ if __name__ == '__main__':
     # Create and show the forms
     if sys.platform.startswith('win'):
         # Make sure the program is running w/ administrative privileges.
-        import win32api
+        # import win32api
         from win32com.shell import shell, shellcon
         if not shell.IsUserAnAdmin():
             alertBox = QMessageBox()
             alertBox.setText("You may need to run this program as an Administrator. If it doesn't work please close this program, and run it by right clicking and choose 'Run As Administrator' ")
             alertBox.show()
         #get the MS AppData directory to store data in
-        homedir = "{}\\".format(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0))
-        if not os.path.isdir("{0}{1}".format(homedir, "SelfRestraint")):
-            os.mkdir("{0}{1}".format(homedir, "SelfRestraint"))
-        homedir = homedir + "\\SelfRestraint\\"
+        config_dir = "{}\\".format(shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0))
+        if not os.path.isdir("{0}{1}".format(config_dir, "SelfRestraint")):
+            os.mkdir("{0}{1}".format(config_dir, "SelfRestraint"))
+        config_dir = config_dir + "\\SelfRestraint\\"
 
-    updater = checkForUpdates()
-    updater.check()
-    donate = checkDonation()
     form = MainForm()
     form.show()
 

@@ -9,6 +9,7 @@ Credits
 -------
 SelfRestraint was developed by [Parker Kuivila](http://parker.kuivi.la)
 The UI and features were inspired by [Steve Lambert](http://visitsteve.com/)
+Duncan Lock got the Linux version working again [Duncan Lock](http://www.codeistry.com/)
 
 License
 -------
