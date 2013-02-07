@@ -198,7 +198,8 @@ class Backend():
             counter.display(timestring)
         else:
             # Got to the end, bail
-            sys.exit(1)
+            t.end()
+            timer.stop()
 
     def endBlock(self):
         """Traverse host file and remove the site blocks"""
