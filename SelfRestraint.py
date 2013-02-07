@@ -193,8 +193,12 @@ class Backend():
 
     def countDown(self):
         self.blockTime = self.blockTime - 1
-        timestring = time.strftime('%H:%M.%S', time.gmtime(self.blockTime))
-        counter.display(timestring)
+        if self.blockTime > 1:
+            timestring = time.strftime('%H:%M.%S', time.gmtime(self.blockTime))
+            counter.display(timestring)
+        else:
+            # Got to the end, bail
+            sys.exit(1)
 
     def endBlock(self):
         """Traverse host file and remove the site blocks"""
