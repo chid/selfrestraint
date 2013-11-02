@@ -52,3 +52,4 @@ To Do
 * Integrate better to use Admin privileges on OSX
 * Increase robustness, and make workarounds harder
 * Add site/config file to prevent constant reentering of sites
+* Add a warning before closing
